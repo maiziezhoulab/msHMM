@@ -21,7 +21,7 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
   param = generateParam(ematrix)
 
   segments <- NULL
-  hmm.segments.list = mrsHMMcopy(ematrix, sample.ids, tumor.sample.ids, annotation, param = param,
+  hmm.segments.list = MRHMMcopy(ematrix, sample.ids, tumor.sample.ids, annotation, param = param,
                         autosomes = NULL, maxiter = 50,
                         getparam = FALSE, verbose = TRUE)
   for (i in 1:dim(ematrix)[2]) {
@@ -72,7 +72,7 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
 #                         end = annotation$end)
 # #####
 # param = generateParam(ematrix)
-# mrsHMMcopy(ematrix, annotation, param, verbose = F)
+# MRHMMcopy(ematrix, annotation, param, verbose = F)
 #####
 # each scale --> change scale outsides
 generateParam <- function(ematrix) {
@@ -96,7 +96,7 @@ generateParam <- function(ematrix) {
   return(param)
 }
 
-mrsHMMcopy <- function(ematrix, sample.ids, tumor.sample.ids, annotation, param = NULL,
+MRHMMcopy <- function(ematrix, sample.ids, tumor.sample.ids, annotation, param = NULL,
                       autosomes = NULL, maxiter = 50,
                       getparam = FALSE, verbose = TRUE) {
   chr = annotation$chr
