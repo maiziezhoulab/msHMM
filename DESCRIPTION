@@ -1,0 +1,11 @@
+Package: MRHMM
+Type: Package
+Title: Multisample RNA-sequencing Hidden Markov Model
+Version: 0.1.0
+Author: Zi-Hang Wen
+Maintainer: The package maintainer <wenzihang0506@gmail.com>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
