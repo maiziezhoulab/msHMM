@@ -117,14 +117,14 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
     for(m in 1:M){
       for (j in 1:length(char.ind.list)) {
         char.ind = char.ind.list[[j]]
-        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "HMMcopy")
+        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "MRHMM")
         # Same transition probability for tumor
         if(sample.ids[m] %in% tumor.sample.ids){
           output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="HMMcopy")
+                         PACKAGE="MRHMM")
         }else{
           output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="HMMcopy")
+                         PACKAGE="MRHMM")
         }
 
         # rho[, char.ind] = output$rho
@@ -201,14 +201,14 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
     for(m in 1:M){
       for (j in 1:length(char.ind.list)) {
         char.ind = char.ind.list[[j]]
-        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "HMMcopy")
+        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "MRHMM")
         # Same transition probability for tumor
         if(sample.ids[m] %in% tumor.sample.ids){
           output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="HMMcopy")
+                         PACKAGE="MRHMM")
         }else{
           output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="HMMcopy")
+                         PACKAGE="MRHMM")
         }
 
         # rho[, char.ind] = output$rho
@@ -230,10 +230,10 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
       char.ind = char.ind.list[[j]]
       if(sample.ids[m] %in% tumor.sample.ids){
         output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "HMMcopy")
+                       PACKAGE = "MRHMM")
       }else{
         output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "HMMcopy")
+                       PACKAGE = "MRHMM")
       }
       Z[char.ind] <- output$path
       segs[[j]] <- output$seg
@@ -264,10 +264,10 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
 #     #                 PACKAGE = "CaSpER")
 #     if(sample.ids[m] %in% tumor.sample.ids){
 #       output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
-#                      PACKAGE = "HMMcopy")
+#                      PACKAGE = "MRHMM")
 #     }else{
 #       output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
-#                      PACKAGE = "HMMcopy")
+#                      PACKAGE = "MRHMM")
 #     }
 #
 #     # Z[I] = output$path
