@@ -4,25 +4,33 @@
 #'
 #' @return Parameters formatted in a data.frame.
 #' @details
-#' \code{e}: Probability of extending a segment, increase to lengthen segments, decrase to shorten segments. Range: (0, 1)
+#' \code{e}: Probability of extending a segment, increase to lengthen segments,
+#' decrase to shorten segments. Range: (0, 1)
 #'
-#' \code{strength}: Strength of initial e suggestion, reducing allows e to change, increasing makes e undefiable. Range: [0, Inf)
+#' \code{strength}: Strength of initial e suggestion, reducing allows e to
+#' change, increasing makes e undefiable. Range: [0, Inf)
 #'
-#' \code{mu}: Suggested median for copy numbers in state, change to readjust classification of states. Range: (-Inf, Inf)
+#' \code{mu}: Suggested median for copy numbers in state, change to readjust
+#' classification of states. Range: (-Inf, Inf)
 #'
-#' \code{lambda}: Suggested precision (inversed variance) for copy numbers in state, increase to reduce overlap between states. Range: [0, Inf)
+#' \code{lambda}: Suggested precision (inversed variance) for copy numbers in
+#' state, increase to reduce overlap between states. Range: [0, Inf)
 #'
-#' \code{nu}: Suggested degree of freedom between states, increase to reduce overlap between states. Range: [0, Inf)
+#' \code{nu}: Suggested degree of freedom between states, increase to reduce
+#' overlap between states. Range: [0, Inf)
 #'
 #' \code{kappa}: Suggested distribution of states. Should sum to 1.
 #'
-#' \code{m}: Optimal value for mu, difference from corresponding mu value determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
+#' \code{m}: Optimal value for mu, difference from corresponding mu value
+#' determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
 #'
 #' \code{eta}: Mobility of mu, increase to allow more movement. Range: [0, Inf)
 #'
-#' \code{gamma}: Prior shape on lambda, gamma distribution. Effects flexibility of lambda.
+#' \code{gamma}: Prior shape on lambda, gamma distribution. Effects flexibility
+#' of lambda.
 #'
-#' \code{S}: Prior scale on lambda, gamma distribution. Effects flexibility of lambda.
+#' \code{S}: Prior scale on lambda, gamma distribution. Effects flexibility of
+#' lambda.
 
 #' @export
 #'
@@ -48,8 +56,8 @@ generateParam <- function(ematrix) {
   return(param)
 }
 
-EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, param, maxiter,
-                          verbose = TRUE){
+EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
+                      param, maxiter, verbose = TRUE){
   K = dim(param)[1]               # number of states
   # ematrix N*M
   N = nrow(ematrix)               # number of genes
@@ -106,7 +114,7 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
   }
   loglik[i] = -Inf
 
-  while(!converged && (i < maxiter)) {
+  while(!converged && (i <= maxiter)) {
     if (verbose) { message(paste("EM iteration:", i,
                                  "Log likelihood:", loglik[i])) }
     i = i + 1
@@ -193,6 +201,10 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
   }
 
   if(converged){
+    if (verbose) {
+      message("Optimal parameters found, segmenting and classifying")
+    }
+
     i = i - 1
     # Perform one last round of E-step to get latest responsibilities
     #E-step
@@ -218,10 +230,15 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
         P.xi[m, ,] = P.xi[m, ,] + t(colSums(aperm(output$xi, c(3, 2, 1))))
       }
     }
+  }else{
+    if (verbose)
+      message("Reach maxiter, segmenting and classifying")
   }
-  if (verbose) {
-    message("Optimal parameters found, segmenting and classifying")
-  }
+
+  mus = mus[, 1:i]
+  sigmam2 = sigmam2[, 1:i]
+  loglik = loglik[1:i]
+
   output.list = list()
   for(m in 1:M){
     segs <- list()
@@ -239,93 +256,17 @@ EMSegment <- function(ematrix, sample.ids, tumor.sample.ids, chrom, autosomes, p
       segs[[j]] <- output$seg
     }
 
-    # mus = mus[, 1:i]
-    # sigmam2 = sigmam2[, 1:i]
-    # loglik = loglik[1:i]
-    #
-    # output <- vector('list', 0);
-    # output$state <- Z
+    output <- vector('list', 0);
+    output$state <- Z
     output$segs <- segs
-    # output$mus <- mus
-    # output$sigmam2 <- sigmam2
-    # output$pi <- P.pi
-    # output$loglik <- loglik
-    # output$P.gamma <- P.gamma
+    output$mus <- mus
+    output$sigmam2 <- sigmam2
+    output$pi <- P.pi
+    output$loglik <- loglik
+    output$P.gamma <- P.gamma
     output.list[[m]] = output
   }
   return(output.list)
-}
-# segs.cell = list()
-# for(m in 1:M){
-#   segs = vector('list', length(chrs))
-#   for (j in 1:length(char.ind.list)) {
-#     char.ind = char.ind.list[[j]]
-#     # output <- .Call("viterbi", log(kappa), log(A), log(py[, I]),
-#     #                 PACKAGE = "CaSpER")
-#     if(sample.ids[m] %in% tumor.sample.ids){
-#       output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
-#                      PACKAGE = "MRHMM")
-#     }else{
-#       output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
-#                      PACKAGE = "MRHMM")
-#     }
-#
-#     # Z[I] = output$path
-#     Zc[m, I] = output$path
-#     segs[[j]] = output$seg
-#   }
-#   segs.cell[[m]] = segs
-# }
-# mus = mus[, 1:i]
-# lambdas = lambdas[, 1:i]
-# loglik = loglik[1:i]
-#
-# output = vector('list', 0);
-# # output$state = Z
-# output$state = Zc
-# # output$segs = segs
-# output$segs = segs.cell
-# output$mus = mus
-# output$lambdas = lambdas
-# output$pi = kappa
-# output$loglik = loglik
-# # output$rho = rho
-# output$rho = rhoc
-
-
-# mu = mus[, i - 1]
-# sigmam2 = sigmam2[, i - 1]
-# P.gamma = P.gamma[, , autosomes]
-estimate_emi_pi <- function(ematrix, mu, sigmam2, P.gamma, param) {
-  nu = param$nu
-  eta = param$eta
-  m = param$m
-  gamma = param$gamma
-  S = param$S
-  P.pi.ini = param$kappa
-  ematrix.reshape = c(ematrix)
-  P.gamma.reshape = matrix(aperm(P.gamma,c(2,3,1)), dim(P.gamma)[2])
-  yr = t(matrix(ematrix.reshape, length(ematrix.reshape), length(mu)))        # Vectorize parameter
-  u = (1 + nu) / (((yr - mu) ^ 2) * sigmam2 + nu); # scale parameter
-
-  # Calculate the mean
-  mu.hat = (rowSums(P.gamma.reshape * u * yr, na.rm = TRUE) + (eta * m)) /
-    (rowSums(P.gamma.reshape * u, na.rm = TRUE) + eta)
-
-  # Calculate the precision
-  sigmam2.hat = (rowSums(P.gamma.reshape, na.rm = TRUE) + gamma + 1) /
-    (rowSums(P.gamma.reshape * u * ((yr - mu.hat) ^ 2), na.rm = TRUE) +
-       (eta * (mu.hat - m) ^ 2 + S))
-
-  # Calculate the stationary distribution
-  P.pi.hat = (rowSums(P.gamma.reshape, na.rm = TRUE) + P.pi.ini - 1) /
-    (length(ematrix.reshape) + sum(P.pi.ini, na.rm = TRUE) + length(mu))
-
-  out = vector('list', 0)
-  out$mu.hat = mu.hat
-  out$sigmam2.hat = sigmam2.hat
-  out$P.pi.hat = P.pi.hat
-  return(out)
 }
 
 
@@ -359,3 +300,37 @@ processSegments <- function(seg, chr, start, end, copy) {
                        median = as.numeric(as.character(median)))
   return(segment)
 }
+
+
+estimate_emi_pi <- function(ematrix, mu, sigmam2, P.gamma, param) {
+  nu = param$nu
+  eta = param$eta
+  m = param$m
+  gamma = param$gamma
+  S = param$S
+  P.pi.ini = param$kappa
+  ematrix.reshape = c(ematrix)
+  P.gamma.reshape = matrix(aperm(P.gamma,c(2,3,1)), dim(P.gamma)[2])
+  yr = t(matrix(ematrix.reshape, length(ematrix.reshape), length(mu)))        # Vectorize parameter
+  u = (1 + nu) / (((yr - mu) ^ 2) * sigmam2 + nu); # scale parameter
+
+  # Calculate the mean
+  mu.hat = (rowSums(P.gamma.reshape * u * yr, na.rm = TRUE) + (eta * m)) /
+    (rowSums(P.gamma.reshape * u, na.rm = TRUE) + eta)
+
+  # Calculate the precision (the inverse of the variance)
+  sigmam2.hat = (rowSums(P.gamma.reshape, na.rm = TRUE) + gamma + 1) /
+    (rowSums(P.gamma.reshape * u * ((yr - mu.hat) ^ 2), na.rm = TRUE) +
+       (eta * (mu.hat - m) ^ 2 + S))
+
+  # Calculate the start distribution
+  P.pi.hat = (rowSums(P.gamma.reshape, na.rm = TRUE) + P.pi.ini - 1) /
+    (length(ematrix.reshape) + sum(P.pi.ini, na.rm = TRUE) + length(mu))
+
+  out = vector('list', 0)
+  out$mu.hat = mu.hat
+  out$sigmam2.hat = sigmam2.hat
+  out$P.pi.hat = P.pi.hat
+  return(out)
+}
+

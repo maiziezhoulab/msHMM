@@ -1,54 +1,70 @@
-# Same transition probability for tumor
-PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, cytoband) {
+## usethis namespace: start
+#' @importFrom Rcpp sourceCpp
+#' @useDynLib MRHMM forward_backward
+#' @useDynLib MRHMM viterbi
+## usethis namespace: end
+NULL
 
-  ematrix <- object@control.normalized[[cnv.scale]]
-  annotation <- object@annotation.filt[]
+#' @title MRHMMsegment
+#' @description Find segmentations across sample.
+#'
+#' @param ematrix The input expression matrix with rows as genes and columns as
+#' cells.
+#' @param annotation A data.frame object which should contain the chromosome
+#' name, the start position, and the end position of each gene.
+#' @param tumor.sample.ids The ids of tumors.
+#' @param sample.ids The ids of samples.
+#' @param param The parameter used in HMM. See details in function
+#' \code{\link[MRHMM]{generateParam}}
+#' @param autosomes Array of LOGICAL values corresponding to the 'chr' argument
+#' where an element is TRUE if the chromosome is an autosome, otherwise FALSE.
+#' If not provided, will automatically set the following chromosomes to false:
+#' "X", "Y", "23", "24", "chrX", chrY", "M", "MT", "chrM". (Copied from HMMcopy)
+#' @param maxiter The maximum number of iteration for EM algorithm.
+#' @param getparam If \code{TRUE}, return with the parameters.
+#' @param verbose If \code{TRUE}, print the messages.
+#'
+#' @return The segments
+#' @export
+#'
+#' @examples
+MRHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
+                         sample.ids = NULL, param = NULL, autosomes = NULL,
+                         maxiter = 50, getparam = FALSE, verbose = TRUE) {
+  chr = annotation$chr
 
-  sample.ids = colnames(ematrix)
-  control.sample.ids = object@control.sample.ids
-  tumor.sample.ids = setdiff(sample.ids, control.sample.ids)
-
-  if (removeCentromere) {
-    isCentromer = annotation$isCentromer == "no"
-    ematrix = ematrix[isCentromer, ]
-    annotation = annotation[isCentromer, ]
+  if (!is.factor(chr)) {
+    warning("chr is not a factor, converting to factor")
+    chr = as.factor(chr)
   }
 
-  annotation = data.frame(chr = as.factor(annotation$cytoband),
-                          start = annotation$start,
-                          end = annotation$end)
-
-  param = generateParam(ematrix)
-
-  segments <- NULL
-  hmm.segments.list = MRHMMcopy(ematrix, sample.ids, tumor.sample.ids, annotation, param = param,
-                        autosomes = NULL, maxiter = 50,
-                        getparam = FALSE, verbose = TRUE)
-  for (i in 1:dim(ematrix)[2]) {
-    hmm.segments <- hmm.segments.list[[i]]
-    segments <- rbind(segments, data.frame(ID = colnames(data)[i], hmm.segments$segs))
+  if (is.null(autosomes)) {
+    autosomes = (chr != "X" & chr != "Y" & chr != "23" & chr != "24" &
+                   chr != "chrX" & chr != "chrY" & chr != "M" & chr != "MT" & chr != "chrM")
   }
 
-  arms <- paste(cytoband$V1, cytoband$V4, sep = "")
-  arm_sizes <- cytoband$V3 - cytoband$V2
-
-  object@segments <- segments
-  object@segments$event_scale <- rep("", nrow(object@segments))
-
-  for (i in 1:dim(object@segments)[1]) {
-    ind <- which(annotation$Position >= object@segments$start[i] & annotation$cytoband == object@segments[i, "chr"] & annotation$Position <=
-                   object@segments$end[i])
-    object@segments$size[i] <- object@segments$end[i] - object@segments$start[i]
-    object@segments$num.marks[i] <- length(ind)
-    pair_arm_sizes <- arm_sizes[match(as.character(object@segments[i, "chr"]), arms)]
-    object@segments$arm.size.perc[i] <- object@segments$size[i]/pair_arm_sizes
-    if (object@segments$size[i] > pair_arm_sizes * (1/3))
-      object@segments$event_scale[i] <- "large_scale"
-    if ((object@segments$size[i] > pair_arm_sizes * (1/10)) & (object@segments$size[i] < pair_arm_sizes * (1/3)))
-      object@segments$event_scale[i] <- "focal"
-
+  if (is.null(param)) {
+    param = generateParam(ematrix)
   }
 
-  return(object)
+  if (getparam) {
+    return(param)
+  }
+
+  if (is.null(sample.ids)) {
+    sample.ids = colnames(ematrix)
+    if (is.null(sample.ids))
+      stop("No sample ids!")
+  }
+  if (!all(tumor.sample.ids %in% sample.ids))
+    stop("The tumor ids and the sample ids do not match")
+
+  output.list = EMSegment(ematrix, tumor.sample.ids, sample.ids, chr, autosomes,
+                          param, maxiter, verbose)
+  for(m in 1:dim(ematrix)[2]){
+    output.list[[m]]$segs = processSegments(output.list[[m]]$segs, chr,
+                                            annotation$start, annotation$end,
+                                            ematrix[, m])
+  }
+  return(output.list)
 }
-

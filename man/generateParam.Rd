@@ -16,23 +16,31 @@ Parameters formatted in a data.frame.
 Generate parameters for HMM
 }
 \details{
-\code{e}: Probability of extending a segment, increase to lengthen segments, decrase to shorten segments. Range: (0, 1)
+\code{e}: Probability of extending a segment, increase to lengthen segments,
+decrase to shorten segments. Range: (0, 1)
 
-\code{strength}: Strength of initial e suggestion, reducing allows e to change, increasing makes e undefiable. Range: [0, Inf)
+\code{strength}: Strength of initial e suggestion, reducing allows e to
+change, increasing makes e undefiable. Range: [0, Inf)
 
-\code{mu}: Suggested median for copy numbers in state, change to readjust classification of states. Range: (-Inf, Inf)
+\code{mu}: Suggested median for copy numbers in state, change to readjust
+classification of states. Range: (-Inf, Inf)
 
-\code{lambda}: Suggested precision (inversed variance) for copy numbers in state, increase to reduce overlap between states. Range: [0, Inf)
+\code{lambda}: Suggested precision (inversed variance) for copy numbers in
+state, increase to reduce overlap between states. Range: [0, Inf)
 
-\code{nu}: Suggested degree of freedom between states, increase to reduce overlap between states. Range: [0, Inf)
+\code{nu}: Suggested degree of freedom between states, increase to reduce
+overlap between states. Range: [0, Inf)
 
 \code{kappa}: Suggested distribution of states. Should sum to 1.
 
-\code{m}: Optimal value for mu, difference from corresponding mu value determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
+\code{m}: Optimal value for mu, difference from corresponding mu value
+determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
 
 \code{eta}: Mobility of mu, increase to allow more movement. Range: [0, Inf)
 
-\code{gamma}: Prior shape on lambda, gamma distribution. Effects flexibility of lambda.
+\code{gamma}: Prior shape on lambda, gamma distribution. Effects flexibility
+of lambda.
 
-\code{S}: Prior scale on lambda, gamma distribution. Effects flexibility of lambda.
+\code{S}: Prior scale on lambda, gamma distribution. Effects flexibility of
+lambda.
 }
