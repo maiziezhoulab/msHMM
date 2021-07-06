@@ -5,3 +5,8 @@
 .DS_Store
 .Rproj
 MRHMM.Rproj
+src/.DS_Store
+src/.gitignore
+src/*.o
+src/*.so
+src/*.dll
