@@ -2,6 +2,7 @@
 
 export(MRHMMsegment)
 export(generateParam)
+export(runCaSpER_MRHMM)
 importFrom(Rcpp,sourceCpp)
 useDynLib(MRHMM,forward_backward)
 useDynLib(MRHMM,viterbi)

@@ -36,7 +36,7 @@ runCaSpER_MRHMM <- function(object, removeCentromere = T, cytoband = object@cyto
     message("Performing HMM segmentation...")
 
     for (i in 1:object@cnv.scale) {
-      cnv.list[[i]] <- MRHMM::PerformSegmentationWithMRHMM(object, cnv.scale = i, removeCentromere = T, cytoband = cytoband, maxiter)
+      cnv.list[[i]] <- PerformSegmentationWithHMM(object, cnv.scale = i, removeCentromere = T, cytoband = cytoband, maxiter)
     }
 
     combin <- expand.grid(1:object@cnv.scale, 1:object@loh.scale)
@@ -54,7 +54,7 @@ runCaSpER_MRHMM <- function(object, removeCentromere = T, cytoband = object@cyto
     }
     names(final.objects) <- list.names
   } else if (method == "fixed") {
-    object <- MRHMM::PerformSegmentationWithMRHMM(object, cnv.scale = object@cnv.scale, removeCentromere = T, cytoband = cytoband, maxiter)
+    object <- PerformSegmentationWithHMM(object, cnv.scale = object@cnv.scale, removeCentromere = T, cytoband = cytoband, maxiter)
     object <- lohCallMedianFilterByChr(object, loh.scale = object@loh.scale)
     object <- calculateLOHShiftsForEachSegment(object)
     object <- assignStates(object)
@@ -64,7 +64,7 @@ runCaSpER_MRHMM <- function(object, removeCentromere = T, cytoband = object@cyto
 }
 
 
-PerformSegmentationWithMRHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter) {
+PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter) {
 
   ematrix <- object@control.normalized[[cnv.scale]]
   annotation <- object@annotation.filt[]
