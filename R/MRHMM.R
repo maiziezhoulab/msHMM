@@ -44,7 +44,7 @@ MRHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
   }
 
   if (is.null(param)) {
-    param = generateParam(ematrix)
+    param = MRHMM::generateParam(ematrix)
   }
 
   if (getparam) {

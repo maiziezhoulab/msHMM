@@ -195,9 +195,10 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
       }
       loglik[i] = loglik[i] + priorA[mPT] + sum(priorMu)
     }
-    if (abs(loglik[i] - loglik[i - 1]) < 1e-1 || loglik[i] < loglik[i - 1]) {
+    # if (abs(loglik[i] - loglik[i - 1]) < 1e-1 || loglik[i] < loglik[i - 1])
+      # converged = T
+    if (abs(loglik[i] - loglik[i - 1]) < 1e-1*M || loglik[i] < loglik[i - 1])
       converged = T
-    }
   }
 
   if(converged){
