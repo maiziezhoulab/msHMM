@@ -94,7 +94,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
   for(m in 1:M){
     for (k in 1:K) {
       # py[k, ] = tdistPDF(copy, mus[k, i], lambdas[k, i], param$nu[k])
-      pyc[m, k, ] = tdistPDF(ematrix[, m], mus[k, i], sigmam2[k, i], param$nu[k])
+      pyc[m, k, ] = MRHMM::tdistPDF(ematrix[, m], mus[k, i], sigmam2[k, i], param$nu[k])
     }
   }
   # Initialize transition matrix to the prior
@@ -152,7 +152,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     # lambda_i = lambdas[, i - 1]
     # output <- estimateTNoiseParamsMap(copy[autosomes], mu_i, lambda_i, param$nu,
     #                                   rho[, autosomes], param$eta, param$m, param$gamma, param$S, param$kappa)
-    output = estimate_emi_pi(ematrix[autosomes, ], mus[, i - 1], sigmam2[, i - 1],
+    output = MRHMM::estimate_emi_pi(ematrix[autosomes, ], mus[, i - 1], sigmam2[, i - 1],
                              P.gamma[, , autosomes], param)
     mus[, i] = output$mu.hat
     sigmam2[, i] = output$sigmam2.hat
@@ -162,7 +162,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     for(m in 1:M){
       for (k in 1:K) {
         # py[k, ] = tdistPDF(copy, mus[k, i], lambdas[k, i], param$nu[k])
-        pyc[m, k, ] = tdistPDF(ematrix[, m], mus[k, i], sigmam2[k, i], param$nu[k])
+        pyc[m, k, ] = MRHMM::tdistPDF(ematrix[, m], mus[k, i], sigmam2[k, i], param$nu[k])
       }
     }
 
@@ -180,9 +180,9 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     for(mPT in 1:num.P.T){
       for (k in 1:K) {
         P.T[mPT, k, ] = P.T.temp[mPT, k, ] + dirPrior[mPT, k, ]
-        P.T[mPT, k, ] = normalize(P.T[mPT, k, ])
+        P.T[mPT, k, ] = MRHMM::normalize(P.T[mPT, k, ])
         priorA[mPT] = priorA[mPT] +
-          log(dirichletpdf(A_prior[mPT, k, ], P.T[mPT, k, ]))
+          log(MRHMM::dirichletpdf(A_prior[mPT, k, ], P.T[mPT, k, ]))
       }
     }
 
