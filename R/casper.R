@@ -64,7 +64,7 @@ runCaSpER_MRHMM <- function(object, removeCentromere = T, cytoband = object@cyto
 }
 
 
-PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter) {
+PerformSegmentationWithMRHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter) {
 
   ematrix <- object@control.normalized[[cnv.scale]]
   annotation <- object@annotation.filt[]
@@ -83,10 +83,10 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
                           start = annotation$start,
                           end = annotation$end)
 
-  param = MRHMM::generateParam(ematrix)
+  param = generateParam(ematrix)
 
   segments <- NULL
-  hmm.segments.list = MRHMM::MRHMMsegment(ematrix, annotation, tumor.sample.ids,
+  hmm.segments.list = MRHMMsegment(ematrix, annotation, tumor.sample.ids,
                                           sample.ids, param = param, autosomes = NULL,
                                           maxiter = maxiter, getparam = FALSE,
                                           verbose = TRUE)
