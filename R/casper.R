@@ -83,7 +83,7 @@ PerformSegmentationWithMRHMM <- function(object, cnv.scale, removeCentromere = T
                           start = annotation$start,
                           end = annotation$end)
 
-  param = generateParam(ematrix)
+  param = MRHMM::generateParam(ematrix)
 
   segments <- NULL
   hmm.segments.list = MRHMM::MRHMMsegment(ematrix, annotation, tumor.sample.ids,
