@@ -57,7 +57,7 @@ generateParam <- function(ematrix) {
 }
 
 EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
-                      param, maxiter, verbose = TRUE){
+                      param, maxiter, tolerance, verbose = TRUE){
   K = dim(param)[1]               # number of states
   # ematrix N*M
   N = nrow(ematrix)               # number of genes
@@ -197,7 +197,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     }
     # if (abs(loglik[i] - loglik[i - 1]) < 1e-1 || loglik[i] < loglik[i - 1])
       # converged = T
-    if (abs(loglik[i] - loglik[i - 1]) < 1e-1*M || loglik[i] < loglik[i - 1])
+    if (abs(loglik[i] - loglik[i - 1]) < tolerance || loglik[i] < loglik[i - 1])
       converged = T
   }
 

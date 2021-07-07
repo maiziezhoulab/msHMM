@@ -30,7 +30,8 @@ NULL
 #' @examples
 MRHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
                          sample.ids = NULL, param = NULL, autosomes = NULL,
-                         maxiter = 50, getparam = FALSE, verbose = TRUE) {
+                         maxiter = 50, tolerance = 0.1*ncol(ematrix),
+                         getparam = FALSE, verbose = TRUE) {
   chr = annotation$chr
 
   if (!is.factor(chr)) {
@@ -60,7 +61,7 @@ MRHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
     stop("The tumor ids and the sample ids do not match")
 
   output.list = EMSegment(ematrix, tumor.sample.ids, sample.ids, chr, autosomes,
-                          param, maxiter, verbose)
+                          param, maxiter, tolerance, verbose)
   for(m in 1:dim(ematrix)[2]){
     output.list[[m]]$segs = processSegments(output.list[[m]]$segs, chr,
                                             annotation$start, annotation$end,
