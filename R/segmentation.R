@@ -114,7 +114,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
   }
   loglik[i] = -Inf
 
-  while(!converged && (i <= maxiter)) {
+  while(!converged && (i < maxiter)) {
     if (verbose) { message(paste("EM iteration:", i,
                                  "Log likelihood:", loglik[i])) }
     i = i + 1
