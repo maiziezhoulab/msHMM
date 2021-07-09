@@ -226,9 +226,9 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
 
         # rho[, char.ind] = output$rho
         P.gamma[m, , char.ind] = output$rho
-        loglik[i] = loglik[i] + output$loglik
-        # accumulate P.xi for each cell
-        P.xi[m, ,] = P.xi[m, ,] + t(colSums(aperm(output$xi, c(3, 2, 1))))
+        # loglik[i] = loglik[i] + output$loglik
+        ## accumulate P.xi for each cell
+        # P.xi[m, ,] = P.xi[m, ,] + t(colSums(aperm(output$xi, c(3, 2, 1))))
       }
     }
   }else{
