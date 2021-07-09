@@ -3,7 +3,7 @@
 # Modified to perform our multisample RNA-sequencing HMM in CaSpER
 # (Same transition probability for tumors or controls)
 
-#' @title runCaSpER_MRHMM()
+#' @title runCaSpER_msHMM()
 #'
 #' @description  Main casper function that performs a pairwise comparison of all scales from BAF and expression signals to ensure a coherent set of CNV calls.
 #'
@@ -20,7 +20,7 @@
 #' @export
 #'
 #'
-runCaSpER_MRHMM <- function(object, removeCentromere = T, cytoband = object@cytoband, method = "iterative", maxiter = 100) {
+runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cytoband, method = "iterative", maxiter = 100) {
   final.objects <- list()
 
   if (method == "iterative") {
@@ -86,7 +86,7 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
   param = generateParam(ematrix)
 
   segments <- NULL
-  hmm.segments.list = MRHMMsegment(ematrix, annotation, tumor.sample.ids,
+  hmm.segments.list = msHMMsegment(ematrix, annotation, tumor.sample.ids,
                                           sample.ids, param = param, autosomes = NULL,
                                           maxiter = maxiter, getparam = FALSE,
                                           verbose = TRUE)

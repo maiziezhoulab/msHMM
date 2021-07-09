@@ -1,2 +1,2 @@
-# MRHMM
-Multisample RNA-sequencing Hidden Markov Model
+# msHMM
+Multi-sample Hidden Markov Model in RNA-sequencing data

@@ -1,11 +1,11 @@
 ## usethis namespace: start
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib MRHMM forward_backward
-#' @useDynLib MRHMM viterbi
+#' @useDynLib msHMM forward_backward
+#' @useDynLib msHMM viterbi
 ## usethis namespace: end
 NULL
 
-#' @title MRHMMsegment
+#' @title msHMMsegment
 #' @description Find segmentations across sample.
 #'
 #' @param ematrix The input expression matrix with rows as genes and columns as
@@ -15,7 +15,7 @@ NULL
 #' @param tumor.sample.ids The ids of tumors.
 #' @param sample.ids The ids of samples.
 #' @param param The parameter used in HMM. See details in function
-#' \code{\link[MRHMM]{generateParam}}
+#' \code{\link[msHMM]{generateParam}}
 #' @param autosomes Array of LOGICAL values corresponding to the 'chr' argument
 #' where an element is TRUE if the chromosome is an autosome, otherwise FALSE.
 #' If not provided, will automatically set the following chromosomes to false:
@@ -28,7 +28,7 @@ NULL
 #' @export
 #'
 #' @examples
-MRHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
+msHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
                          sample.ids = NULL, param = NULL, autosomes = NULL,
                          maxiter = 50, tolerance = 0.1*ncol(ematrix),
                          getparam = FALSE, verbose = TRUE) {

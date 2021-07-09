@@ -125,14 +125,14 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     for(m in 1:M){
       for (j in 1:length(char.ind.list)) {
         char.ind = char.ind.list[[j]]
-        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "MRHMM")
+        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "msHMM")
         # Same transition probability for tumor
         if(sample.ids[m] %in% tumor.sample.ids){
           output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="MRHMM")
+                         PACKAGE="msHMM")
         }else{
           output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="MRHMM")
+                         PACKAGE="msHMM")
         }
 
         # rho[, char.ind] = output$rho
@@ -214,14 +214,14 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     for(m in 1:M){
       for (j in 1:length(char.ind.list)) {
         char.ind = char.ind.list[[j]]
-        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "MRHMM")
+        # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "msHMM")
         # Same transition probability for tumor
         if(sample.ids[m] %in% tumor.sample.ids){
           output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="MRHMM")
+                         PACKAGE="msHMM")
         }else{
           output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="MRHMM")
+                         PACKAGE="msHMM")
         }
 
         # rho[, char.ind] = output$rho
@@ -248,10 +248,10 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
       char.ind = char.ind.list[[j]]
       if(sample.ids[m] %in% tumor.sample.ids){
         output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "MRHMM")
+                       PACKAGE = "msHMM")
       }else{
         output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "MRHMM")
+                       PACKAGE = "msHMM")
       }
       Z[char.ind] <- output$path
       segs[[j]] <- output$seg
