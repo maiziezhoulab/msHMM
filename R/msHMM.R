@@ -56,7 +56,9 @@ msHMMsegment <- function(ematrix, annotation, tran.namelist = NULL,
 
   if(is.null(tran.namelist)){
     tran.namelist = list()
-    tran.namelist[[1]] = 1:ncol(ematrix)
+    for(mtn in 1:ncol(ematrix)){
+      tran.namelist[[mtn]] = mtn
+    }
   }
   if(length(tran.namelist) > ncol(ematrix))
     stop("The type of transition probabilities is larger than number of cells")
