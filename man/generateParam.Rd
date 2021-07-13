@@ -34,7 +34,8 @@ overlap between states. Range: [0, Inf)
 \code{kappa}: Suggested distribution of states. Should sum to 1.
 
 \code{m}: Optimal value for mu, difference from corresponding mu value
-determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
+determines elasticity of the mu value. i.e. Set to identical value as mu
+if you don't want mu to move much.
 
 \code{eta}: Mobility of mu, increase to allow more movement. Range: [0, Inf)
 

@@ -72,6 +72,7 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
   sample.ids = colnames(ematrix)
   control.sample.ids = object@control.sample.ids
   tumor.sample.ids = setdiff(sample.ids, control.sample.ids)
+  tran.namelist = list(control.sample.ids, tumor.sample.ids)
 
   if (removeCentromere) {
     isCentromer = annotation$isCentromer == "no"
@@ -86,10 +87,10 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
   param = generateParam(ematrix)
 
   segments <- NULL
-  hmm.segments.list = msHMMsegment(ematrix, annotation, tumor.sample.ids,
-                                          sample.ids, param = param, autosomes = NULL,
-                                          maxiter = maxiter, getparam = FALSE,
-                                          verbose = TRUE)
+  hmm.segments.list = msHMMsegment(ematrix, annotation, tran.namelist,
+                                   param = param, autosomes = NULL,
+                                   maxiter = maxiter, getparam = FALSE,
+                                   verbose = TRUE)
   for (i in 1:dim(ematrix)[2]) {
     hmm.segments <- hmm.segments.list[[i]]
     segments <- rbind(segments, data.frame(ID = colnames(data)[i], hmm.segments$segs))

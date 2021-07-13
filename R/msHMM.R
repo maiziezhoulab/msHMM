@@ -12,8 +12,10 @@ NULL
 #' cells.
 #' @param annotation A data.frame object which should contain the chromosome
 #' name, the start position, and the end position of each gene.
-#' @param tumor.sample.ids The ids of tumors.
-#' @param sample.ids The ids of samples.
+#' @param tran.namelist A list containing the cell indexes. The cell indexes in
+#' each index of \code{tran.namelist} can only be ether numeric (integer)
+#' variables or the names of cells. The cells in the same index of
+#' \code{tran.namelist} will share a same transition probability matrix.
 #' @param param The parameter used in HMM. See details in function
 #' \code{\link[msHMM]{generateParam}}
 #' @param autosomes Array of LOGICAL values corresponding to the 'chr' argument
@@ -28,10 +30,10 @@ NULL
 #' @export
 #'
 #' @examples
-msHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
-                         sample.ids = NULL, param = NULL, autosomes = NULL,
-                         maxiter = 50, tolerance = 0.1*ncol(ematrix),
-                         getparam = FALSE, verbose = TRUE) {
+msHMMsegment <- function(ematrix, annotation, tran.namelist = NULL,
+                         param = NULL, autosomes = NULL, maxiter = 50,
+                         tolerance = 0.1*ncol(ematrix), getparam = FALSE,
+                         verbose = TRUE) {
   chr = annotation$chr
 
   if (!is.factor(chr)) {
@@ -52,15 +54,23 @@ msHMMsegment <- function(ematrix, annotation, tumor.sample.ids,
     return(param)
   }
 
-  if (is.null(sample.ids)) {
-    sample.ids = colnames(ematrix)
-    if (is.null(sample.ids))
-      stop("No sample ids!")
+  if(is.null(tran.namelist)){
+    tran.namelist = list()
+    tran.namelist[[1]] = 1:ncol(ematrix)
   }
-  if (!all(tumor.sample.ids %in% sample.ids))
-    stop("The tumor ids and the sample ids do not match")
+  if(length(tran.namelist) > ncol(ematrix))
+    stop("The type of transition probabilities is larger than number of cells")
+  for(mPT in 1:length(tran.namelist)){
+    if(class(tran.namelist[[mPT]]) == "numeric" || class(tran.namelist[[mPT]]) == "integer"){
+      if(max(tran.namelist[[mPT]]) > ncol(ematrix)){
+        stop("The index in tran.namelist is out of bound")
+      }
+    }else if(!(all(tran.namelist[[mPT]] %in% colnames(ematrix)))){
+      stop("The tran.namelist can only be ether numeric (integer) variables or the names of cells.")
+    }
+  }
 
-  output.list = EMSegment(ematrix, tumor.sample.ids, sample.ids, chr, autosomes,
+  output.list = EMSegment(ematrix, tran.namelist, chr, autosomes,
                           param, maxiter, tolerance, verbose)
   for(m in 1:dim(ematrix)[2]){
     output.list[[m]]$segs = processSegments(output.list[[m]]$segs, chr,

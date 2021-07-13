@@ -22,7 +22,8 @@
 #' \code{kappa}: Suggested distribution of states. Should sum to 1.
 #'
 #' \code{m}: Optimal value for mu, difference from corresponding mu value
-#' determines elasticity of the mu value. i.e. Set to identical value as mu if you don't want mu to move much.
+#' determines elasticity of the mu value. i.e. Set to identical value as mu
+#' if you don't want mu to move much.
 #'
 #' \code{eta}: Mobility of mu, increase to allow more movement. Range: [0, Inf)
 #'
@@ -56,7 +57,7 @@ generateParam <- function(ematrix) {
   return(param)
 }
 
-EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
+EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
                       param, maxiter, tolerance, verbose = TRUE){
   K = dim(param)[1]               # number of states
   # ematrix N*M
@@ -77,6 +78,17 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
   P.xi = array(0, c(M, K, K))     # sum the genes of xi
   # loglik = rep(0, maxiter)
   loglik = matrix(0, M, maxiter)
+
+  # transform the tran.namelist to a factor
+  num.P.T = length(tran.namelist)
+  P.T = array(0, c(num.P.T, K, K))
+
+  tran.namefactor = rep(0, M)
+  names(tran.namefactor) = colnames(ematrix)
+  for(mPT in 1:num.P.T){
+    tran.namefactor[tran.namelist[[mPT]]] = mPT
+  }
+  tran.namefactor = as.factor(tran.namefactor)
 
   # SET UP
   # Set up the chromosome indices and make cell array of chromosome indicies
@@ -101,8 +113,8 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
   # Initialize transition matrix to the prior
   # P.T = matrix(0, K, K)
   # Same transition probability for tumor
-  num.P.T = 2          # tumor: 1 and control: 2
-  P.T = array(0, c(num.P.T, K, K))
+  # num.P.T = 2          # tumor: 1 and control: 2
+  # P.T = array(0, c(num.P.T, K, K))
   A_prior = array(0, c(num.P.T, K, K))
   dirPrior = array(0, c(num.P.T, K, K))
   for(mPT in 1:num.P.T){
@@ -129,13 +141,16 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
         char.ind = char.ind.list[[j]]
         # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "msHMM")
         # Same transition probability for tumor
-        if(sample.ids[m] %in% tumor.sample.ids){
-          output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="msHMM")
-        }else{
-          output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="msHMM")
-        }
+        index.P.T = tran.namefactor[m]
+        output = .Call("forward_backward", P.pi, P.T[index.P.T, , ],
+                       pyc[m, , char.ind], PACKAGE="msHMM")
+        # if(sample.ids[m] %in% tumor.sample.ids){
+        #   output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
+        #                  PACKAGE="msHMM")
+        # }else{
+        #   output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
+        #                  PACKAGE="msHMM")
+        # }
 
         # rho[, char.ind] = output$rho
         P.gamma[m, , char.ind] = output$rho
@@ -173,11 +188,13 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     priorA = rep(0,num.P.T)
     P.T.temp = array(0,dim(P.T))
     for(m in 1:M){
-      if(sample.ids[m] %in% tumor.sample.ids){
-        P.T.temp[1, , ] = P.xi[m, ,] + P.T.temp[1, , ]
-      }else{
-        P.T.temp[2, , ] = P.xi[m, ,] + P.T.temp[2, , ]
-      }
+      index.P.T = tran.namefactor[m]
+      P.T.temp[index.P.T, , ] = P.xi[m, ,] + P.T.temp[index.P.T, , ]
+      # if(sample.ids[m] %in% tumor.sample.ids){
+      #   P.T.temp[1, , ] = P.xi[m, ,] + P.T.temp[1, , ]
+      # }else{
+      #   P.T.temp[2, , ] = P.xi[m, ,] + P.T.temp[2, , ]
+      # }
     }
     for(mPT in 1:num.P.T){
       for (k in 1:K) {
@@ -203,11 +220,13 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     }
     priorMu.sum = sum(priorMu)
     for(m in 1:M){
-      if(sample.ids[m] %in% tumor.sample.ids){
-        loglik[m, i] = loglik[m, i] + priorA[1] + priorMu.sum
-      }else{
-        loglik[m, i] = loglik[m, i] + priorA[2] + priorMu.sum
-      }
+      index.P.T = tran.namefactor[m]
+      loglik[m, i] = loglik[m, i] + priorA[index.P.T] + priorMu.sum
+      # if(sample.ids[m] %in% tumor.sample.ids){
+      #   loglik[m, i] = loglik[m, i] + priorA[1] + priorMu.sum
+      # }else{
+      #   loglik[m, i] = loglik[m, i] + priorA[2] + priorMu.sum
+      # }
     }
 
     # if (abs(loglik[i] - loglik[i - 1]) < 1e-1 || loglik[i] < loglik[i - 1])
@@ -233,13 +252,16 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
         char.ind = char.ind.list[[j]]
         # output = .Call("forward_backward",P.pi,P.T,py[, char.ind],PACKAGE = "msHMM")
         # Same transition probability for tumor
-        if(sample.ids[m] %in% tumor.sample.ids){
-          output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
-                         PACKAGE="msHMM")
-        }else{
-          output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
-                         PACKAGE="msHMM")
-        }
+        index.P.T = tran.namefactor[m]
+        output = .Call("forward_backward", P.pi, P.T[index.P.T, , ],
+                       pyc[m, , char.ind], PACKAGE="msHMM")
+        # if(sample.ids[m] %in% tumor.sample.ids){
+        #   output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
+        #                  PACKAGE="msHMM")
+        # }else{
+        #   output = .Call("forward_backward", P.pi, P.T[2, , ], pyc[m, , char.ind],
+        #                  PACKAGE="msHMM")
+        # }
 
         # rho[, char.ind] = output$rho
         P.gamma[m, , char.ind] = output$rho
@@ -263,13 +285,17 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     Z = rep(0, N)
     for (j in 1:length(char.ind.list)) {
       char.ind = char.ind.list[[j]]
-      if(sample.ids[m] %in% tumor.sample.ids){
-        output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "msHMM")
-      }else{
-        output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
-                       PACKAGE = "msHMM")
-      }
+      index.P.T = tran.namefactor[m]
+      output = .Call("viterbi", log(P.pi), log(P.T[index.P.T, , ]),
+                     log(pyc[m, , char.ind]), PACKAGE = "msHMM")
+
+      # if(sample.ids[m] %in% tumor.sample.ids){
+      #   output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
+      #                  PACKAGE = "msHMM")
+      # }else{
+      #   output = .Call("viterbi", log(P.pi), log(P.T[2, , ]), log(pyc[m, , char.ind]),
+      #                  PACKAGE = "msHMM")
+      # }
       Z[char.ind] <- output$path
       segs[[j]] <- output$seg
     }

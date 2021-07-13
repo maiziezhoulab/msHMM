@@ -7,8 +7,7 @@
 msHMMsegment(
   ematrix,
   annotation,
-  tumor.sample.ids,
-  sample.ids = NULL,
+  tran.namelist = NULL,
   param = NULL,
   autosomes = NULL,
   maxiter = 50,
@@ -24,9 +23,10 @@ cells.}
 \item{annotation}{A data.frame object which should contain the chromosome
 name, the start position, and the end position of each gene.}
 
-\item{tumor.sample.ids}{The ids of tumors.}
-
-\item{sample.ids}{The ids of samples.}
+\item{tran.namelist}{A list containing the cell indexes. The cell indexes in
+each index of \code{tran.namelist} can only be ether numeric (integer)
+variables or the names of cells. The cells in the same index of
+\code{tran.namelist} will share a same transition probability matrix.}
 
 \item{param}{The parameter used in HMM. See details in function
 \code{\link[msHMM]{generateParam}}}
