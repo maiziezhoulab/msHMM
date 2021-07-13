@@ -75,7 +75,8 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
   # Zc = matrix(0, M, N)
   # Zcounts = matrix(0, K, K)
   P.xi = array(0, c(M, K, K))     # sum the genes of xi
-  loglik = rep(0, maxiter)
+  # loglik = rep(0, maxiter)
+  loglik = matrix(0, M, maxiter)
 
   # SET UP
   # Set up the chromosome indices and make cell array of chromosome indicies
@@ -112,11 +113,12 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     A_prior[mPT, , ] = P.T[mPT, , ]
     dirPrior[mPT, , ] = P.T[mPT, , ] * param$strength[1]
   }
-  loglik[i] = -Inf
+  loglik[, i] = -Inf
+  loglik.new = sum(loglik[, i])
 
   while(!converged && (i < maxiter)) {
     if (verbose) { message(paste("EM iteration:", i,
-                                 "Log likelihood:", loglik[i])) }
+                                 "Log likelihood:", loglik.new)) }
     i = i + 1
 
     # E-step
@@ -137,7 +139,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
 
         # rho[, char.ind] = output$rho
         P.gamma[m, , char.ind] = output$rho
-        loglik[i] = loglik[i] + output$loglik
+        loglik[m, i] = loglik[m, i] + output$loglik
         # accumulate P.xi for each cell
         P.xi[m, ,] = P.xi[m, ,] + t(colSums(aperm(output$xi, c(3, 2, 1))))
       }
@@ -188,16 +190,31 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
 
     # Compute log likelihood and check convergence
     # Same transition probability for tumor
-    for(mPT in 1:num.P.T){
-      priorMu = c()
-      for(k in 1:K) {
-        priorMu[k] = log(dnorm(mus[k, i], param$mu[k], 1))
-      }
-      loglik[i] = loglik[i] + priorA[mPT] + sum(priorMu)
+    # for(mPT in 1:num.P.T){
+    #   priorMu = c()
+    #   for(k in 1:K) {
+    #     priorMu[k] = log(dnorm(mus[k, i], param$mu[k], 1))
+    #   }
+    #   loglik[i] = loglik[i] + priorA[mPT] + sum(priorMu)
+    # }
+    priorMu = c()
+    for(k in 1:K) {
+      priorMu[k] = log(dnorm(mus[k, i], param$mu[k], 1))
     }
+    priorMu.sum = sum(priorMu)
+    for(m in 1:M){
+      if(sample.ids[m] %in% tumor.sample.ids){
+        loglik[m, i] = loglik[m, i] + priorA[1] + priorMu.sum
+      }else{
+        loglik[m, i] = loglik[m, i] + priorA[2] + priorMu.sum
+      }
+    }
+
     # if (abs(loglik[i] - loglik[i - 1]) < 1e-1 || loglik[i] < loglik[i - 1])
       # converged = T
-    if (abs(loglik[i] - loglik[i - 1]) < tolerance || loglik[i] < loglik[i - 1])
+    loglik.new = sum(loglik[, i])
+    loglik.old = sum(loglik[, i - 1])
+    if (abs(loglik.new - loglik.old) < tolerance || loglik.new < loglik.old)
       converged = T
   }
 
@@ -238,7 +255,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
 
   mus = mus[, 1:i]
   sigmam2 = sigmam2[, 1:i]
-  loglik = loglik[1:i]
+  loglik = loglik[, 1:i]
 
   output.list = list()
   for(m in 1:M){
@@ -263,7 +280,7 @@ EMSegment <- function(ematrix, tumor.sample.ids, sample.ids, chrom, autosomes,
     output$mus <- mus
     output$sigmam2 <- sigmam2
     output$pi <- P.pi
-    output$loglik <- loglik
+    output$loglik <- loglik[m, ]
     output$P.gamma <- P.gamma
     output.list[[m]] = output
   }
