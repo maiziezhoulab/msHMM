@@ -20,7 +20,7 @@
 #' @export
 #'
 #'
-runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cytoband, method = "iterative", maxiter = 100) {
+runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cytoband, method = "iterative", maxiter = 100, tran.namelist = NULL) {
   final.objects <- list()
 
   if (method == "iterative") {
@@ -36,7 +36,7 @@ runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cyto
     message("Performing HMM segmentation...")
 
     for (i in 1:object@cnv.scale) {
-      cnv.list[[i]] <- PerformSegmentationWithHMM(object, cnv.scale = i, removeCentromere = T, cytoband = cytoband, maxiter)
+      cnv.list[[i]] <- PerformSegmentationWithHMM(object, cnv.scale = i, removeCentromere = T, cytoband = cytoband, maxiter, tran.namelist)
     }
 
     combin <- expand.grid(1:object@cnv.scale, 1:object@loh.scale)
@@ -54,7 +54,7 @@ runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cyto
     }
     names(final.objects) <- list.names
   } else if (method == "fixed") {
-    object <- PerformSegmentationWithHMM(object, cnv.scale = object@cnv.scale, removeCentromere = T, cytoband = cytoband, maxiter)
+    object <- PerformSegmentationWithHMM(object, cnv.scale = object@cnv.scale, removeCentromere = T, cytoband = cytoband, maxiter, tran.namelist)
     object <- lohCallMedianFilterByChr(object, loh.scale = object@loh.scale)
     object <- calculateLOHShiftsForEachSegment(object)
     object <- assignStates(object)
@@ -64,7 +64,7 @@ runCaSpER_msHMM <- function(object, removeCentromere = T, cytoband = object@cyto
 }
 
 
-PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter) {
+PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, cytoband, maxiter, tran.namelist) {
 
   ematrix <- object@control.normalized[[cnv.scale]]
   annotation <- object@annotation.filt[]
@@ -72,7 +72,8 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
   sample.ids = colnames(ematrix)
   control.sample.ids = object@control.sample.ids
   tumor.sample.ids = setdiff(sample.ids, control.sample.ids)
-  tran.namelist = list(control.sample.ids, tumor.sample.ids)
+  if(!is.null(tran.namelist))
+    tran.namelist = list(control.sample.ids, tumor.sample.ids)
 
   if (removeCentromere) {
     isCentromer = annotation$isCentromer == "no"

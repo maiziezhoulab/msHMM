@@ -9,7 +9,8 @@ runCaSpER_msHMM(
   removeCentromere = T,
   cytoband = object@cytoband,
   method = "iterative",
-  maxiter = 100
+  maxiter = 100,
+  tran.namelist = NULL
 )
 }
 \arguments{
