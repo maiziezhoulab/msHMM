@@ -143,7 +143,7 @@ EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
         # Same transition probability for tumor
         index.P.T = tran.namefactor[m]
         output = .Call("forward_backward", P.pi, P.T[index.P.T, , ],
-                       pyc[m, , char.ind], PACKAGE="msHMM")
+                       as.matrix(pyc[m, , char.ind]), PACKAGE="msHMM")
         # if(sample.ids[m] %in% tumor.sample.ids){
         #   output = .Call("forward_backward", P.pi, P.T[1, , ], pyc[m, , char.ind],
         #                  PACKAGE="msHMM")
