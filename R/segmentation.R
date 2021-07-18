@@ -233,7 +233,8 @@ EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
       # converged = T
     loglik.new = sum(loglik[, i])
     loglik.old = sum(loglik[, i - 1])
-    if (abs(loglik.new - loglik.old) < tolerance || loglik.new < loglik.old)
+    if ((abs(loglik.new - loglik.old) < tolerance || loglik.new < loglik.old)
+        && i >= max(10,maxiter/100))
       converged = T
   }
 
@@ -287,7 +288,7 @@ EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
       char.ind = char.ind.list[[j]]
       index.P.T = tran.namefactor[m]
       output = .Call("viterbi", log(P.pi), log(P.T[index.P.T, , ]),
-                     log(pyc[m, , char.ind]), PACKAGE = "msHMM")
+                     as.matrix(log(pyc[m, , char.ind])), PACKAGE = "msHMM")
 
       # if(sample.ids[m] %in% tumor.sample.ids){
       #   output = .Call("viterbi", log(P.pi), log(P.T[1, , ]), log(pyc[m, , char.ind]),
@@ -311,38 +312,6 @@ EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
     output.list[[m]] = output
   }
   return(output.list)
-}
-
-
-processSegments <- function(seg, chr, start, end, copy) {
-  segment <- data.frame()
-
-  if (!is.factor(chr)) {
-    warning("chr is not a factor, converting to factor")
-    chr <- as.factor(chr)
-  }
-
-  chromosomes <- levels(chr)
-  for (i in 1:length(chromosomes)) {
-    seg_length = dim(seg[[i]])[1]
-    chr_name <- rep(chromosomes[i], seg_length)
-    chr_index <- which(chr == chromosomes[i])
-    chr_start <- start[chr_index][seg[[i]][, 1]]
-    chr_stop <- end[chr_index][seg[[i]][, 2]]
-    chr_state <- seg[[i]][, 3]
-    chr_median <- rep(0, seg_length)
-    for(j in 1:seg_length) {
-      chr_median[j] <-
-        median(na.rm = TRUE, copy[chr_index][seg[[i]][j, 1]:seg[[i]][j, 2]])
-    }
-    segment <- rbind(segment, cbind(chr = chr_name,
-                                    start = as.numeric(chr_start), end = chr_stop, state = chr_state,
-                                    median = chr_median))
-  }
-  segment <- transform(segment, start = as.numeric(as.character(start)),
-                       end = as.numeric(as.character(end)),
-                       median = as.numeric(as.character(median)))
-  return(segment)
 }
 
 
@@ -377,4 +346,38 @@ estimate_emi_pi <- function(ematrix, mu, sigmam2, P.gamma, param) {
   out$P.pi.hat = P.pi.hat
   return(out)
 }
+
+
+# Author: Daniel Lai https://bioconductor.org/packages/release/bioc/html/HMMcopy.html
+processSegments <- function(seg, chr, start, end, copy) {
+  segment <- data.frame()
+
+  if (!is.factor(chr)) {
+    warning("chr is not a factor, converting to factor")
+    chr <- as.factor(chr)
+  }
+
+  chromosomes <- levels(chr)
+  for (i in 1:length(chromosomes)) {
+    seg_length = dim(seg[[i]])[1]
+    chr_name <- rep(chromosomes[i], seg_length)
+    chr_index <- which(chr == chromosomes[i])
+    chr_start <- start[chr_index][seg[[i]][, 1]]
+    chr_stop <- end[chr_index][seg[[i]][, 2]]
+    chr_state <- seg[[i]][, 3]
+    chr_median <- rep(0, seg_length)
+    for(j in 1:seg_length) {
+      chr_median[j] <-
+        median(na.rm = TRUE, copy[chr_index][seg[[i]][j, 1]:seg[[i]][j, 2]])
+    }
+    segment <- rbind(segment, cbind(chr = chr_name,
+                                    start = as.numeric(chr_start), end = chr_stop, state = chr_state,
+                                    median = chr_median))
+  }
+  segment <- transform(segment, start = as.numeric(as.character(start)),
+                       end = as.numeric(as.character(end)),
+                       median = as.numeric(as.character(median)))
+  return(segment)
+}
+
 
