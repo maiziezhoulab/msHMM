@@ -81,6 +81,10 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
     annotation = annotation[isCentromer, ]
   }
 
+  indices <- annotation$cytoband %in% names(which(table(annotation$cytoband) > 1))
+  annotation <- annotation[indices, , drop = FALSE]
+  ematrix <- ematrix[indices, , drop = FALSE]
+
   annotation = data.frame(chr = as.factor(annotation$cytoband),
                           start = annotation$start,
                           end = annotation$end)
