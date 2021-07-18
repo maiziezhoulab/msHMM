@@ -98,7 +98,7 @@ PerformSegmentationWithHMM <- function(object, cnv.scale, removeCentromere = T, 
                                    verbose = TRUE)
   for (i in 1:dim(ematrix)[2]) {
     hmm.segments <- hmm.segments.list[[i]]
-    segments <- rbind(segments, data.frame(ID = colnames(data)[i], hmm.segments$segs))
+    segments <- rbind(segments, data.frame(ID = colnames(ematrix)[i], hmm.segments$segs))
   }
 
   arms <- paste(cytoband$V1, cytoband$V4, sep = "")
