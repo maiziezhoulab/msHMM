@@ -10,7 +10,7 @@ runCaSpER_msHMM(
   cytoband = object@cytoband,
   method = "iterative",
   maxiter = 100,
-  tran.namelist = NULL
+  tran.type = NULL
 )
 }
 \arguments{
