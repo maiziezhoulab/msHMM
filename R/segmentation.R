@@ -168,7 +168,8 @@ EMSegment <- function(ematrix, tran.namelist, chrom, autosomes,
     # mu_i = mus[, i - 1]
     # lambda_i = lambdas[, i - 1]
     # output <- estimateTNoiseParamsMap(copy[autosomes], mu_i, lambda_i, param$nu,
-    #                                   rho[, autosomes], param$eta, param$m, param$gamma, param$S, param$kappa)
+    #                                   rho[, autosomes], param$eta, param$m, param$gamma,
+    #                                   param$S, param$kappa)
     output = estimate_emi_pi(ematrix[autosomes, ], mus[, i - 1], sigmam2[, i - 1],
                              P.gamma[, , autosomes], param)
     mus[, i] = output$mu.hat
